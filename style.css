@@ -360,3 +360,25 @@
 
             .toast-container { bottom: 16px; left: 16px; right: 16px; }
         }
+       
+       /* Rodapé */
+        .footer {
+            background-color: #000000;
+            color: #ffffff;
+            text-align: center;
+            padding: 20px 0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            width: 100%;
+            position: relative;
+            bottom: 0;
+        }
+
+        .footer p {
+            margin: 5px 0;
+        }
+
+        .footer .copyright {
+            font-weight: lighter;
+            opacity: 0.8;
+        }
