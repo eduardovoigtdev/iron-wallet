@@ -28,13 +28,6 @@ Interface moderna inspirada em dashboards fintechs, totalmente responsiva para d
 O projeto foi desenvolvido como uma ferramenta gratuita de apoio à educação financeira, buscando oferecer uma solução simples e acessível para ajudar pessoas a organizarem melhor sua vida financeira.
 A aplicação foi projetada priorizando a experiência mobile, considerando que muitas pessoas utilizam o smartphone como principal meio de acesso à internet.
 
-## Estrutura do Projeto
-📁 iron-wallet
- ├── index.html
- ├── style.css
- ├── script.js
- └── assets
-
  ## Melhorias Futuras
 - Integração com banco de dados
 - Sistema de login
