@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Iron Wallet | Gestão Financeira</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+  
+</head>
+<body>
+  
+    <div class="app-container" id="app-content">
+        <!-- header / navbar -->
+        <nav class="navbar" data-html2canvas-ignore="true">
+            <div class="brand">
+                <i class="fa-solid fa-wallet text-primary"></i>
+                <span>Iron Wallet - Gestão Financeira</span>
+            </div>
+            <div class="nav-actions">
+                <button class="btn" onclick="exportPDF()" title="Exportar Relatório PDF">
+                    <i class="fa-solid fa-download"></i> <span class="hide-mobile">Exportar</span>
+                </button>
+                <button class="btn btn-primary" onclick="openModal('txModal')">
+                    <i class="fa-solid fa-plus"></i> Novo
+                </button>
+            </div>
+        </nav>
+
+        <!-- dashboard cards -->
+        <section class="dashboard-grid">
+            <div class="card stat-card">
+                <div class="stat-header">
+                    <i class="fa-solid fa-building-columns"></i> Saldo Atual
+                </div>
+                <span class="stat-value" id="saldo-total">R$ 0,00</span>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-header">
+                    <i class="fa-solid fa-arrow-up text-success"></i> Receitas
+                </div>
+                <span class="stat-value text-success" id="receitas-total">R$ 0,00</span>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-header">
+                    <i class="fa-solid fa-arrow-down text-danger"></i> Despesas
+                </div>
+                <span class="stat-value text-danger" id="despesas-total">R$ 0,00</span>
+            </div>
+            <div class="card stat-card">
+                <div class="stat-header">
+                    <i class="fa-solid fa-chart-pie text-primary"></i> Economia
+                </div>
+                <span class="stat-value" id="economia-total">0%</span>
+            </div>
+        </section>
+
+        <!-- area principal -->
+        <section class="main-grid">
+            <!-- coluna esquerda transações -->
+            <div class="card">
+                <div class="controls-bar" data-html2canvas-ignore="true">
+                    <h3>Transações</h3>
+                    <div class="input-group">
+                        <input type="text" id="search-tx" placeholder="Pesquisar..." oninput="filterTransactions()">
+                        <select id="filter-category" onchange="filterTransactions()">
+                            <option value="all">Categorias</option>
+                            <!-- preenchido por JS -->
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="tx-table">
+                        <thead>
+                            <tr>
+                                <th>Data</th>
+                                <th>Descrição</th>
+                                <th>Categoria</th>
+                                <th>Valor</th>
+                                <th data-html2canvas-ignore="true" style="text-align: right;">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tx-list">
+                            <!-- linhas renderizadas via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- coluna direita gráficos e inteligência -->
+            <div class="side-panel" style="display: flex; flex-direction: column; gap: 24px;">
+                
+                <div class="card">
+                    <h3>Despesas por Categoria</h3>
+                    <div style="position: relative; height: 220px; width: 100%; margin-top: 16px;">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <h3>Meta Mensal</h3>
+                        <button class="action-btn" onclick="openModal('goalModal')" data-html2canvas-ignore="true">
+                            <i class="fa-solid fa-pen-to-square"></i>
+                        </button>
+                    </div>
+                    <div class="progress-container">
+                        <div class="progress-header">
+                            <span id="goal-text">R$ 0,00</span>
+                            <span id="goal-percent">0%</span>
+                        </div>
+                        <div class="progress-bar-bg">
+                            <div class="progress-bar-fill" id="goal-progress"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Insights</h3>
+                    <div class="tips-list" id="smart-tips">
+                        <!-- dicas geradas por JS -->
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </div>
+
+    <!-- modal nova transação -->
+    <div class="modal-overlay" id="txModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Nova Transação</h2>
+                <button class="action-btn" onclick="closeModal('txModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form id="tx-form" onsubmit="addTransaction(event)">
+                <div class="form-group">
+                    <label>Tipo</label>
+                    <select id="tx-type" required>
+                        <option value="despesa">Despesa</option>
+                        <option value="receita">Receita</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Descrição</label>
+                    <input type="text" id="tx-desc" placeholder="Ex: Mercado" required>
+                </div>
+                <div class="form-group">
+                    <label>Valor (R$)</label>
+                    <input type="number" id="tx-amount" step="0.01" min="0.01" placeholder="0.00" required>
+                </div>
+                <div class="form-group">
+                    <label>Categoria</label>
+                    <select id="tx-category" required>
+                        <!-- populado por JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="date" id="tx-date" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">Adicionar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- modal config meta -->
+    <div class="modal-overlay" id="goalModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Definir Meta</h2>
+                <button class="action-btn" onclick="closeModal('goalModal')"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="setGoal(event)">
+                <div class="form-group">
+                    <label>Valor desejado de economia mensal</label>
+                    <input type="number" id="goal-input" step="0.01" min="0" placeholder="0.00" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Salvar Meta</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- container notificações -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
